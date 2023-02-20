@@ -4,10 +4,11 @@ import (
 	"os"
 
 	"github.com/consensys/gnark-crypto/ecc"
+	"github.com/consensys/gnark-crypto/ecc/bn254"
+
 	"github.com/consensys/gnark/backend/groth16"
 	"github.com/consensys/gnark/frontend"
 	"github.com/consensys/gnark/frontend/cs/r1cs"
-	"github.com/consensys/gnark/qap"
 	"github.com/consensys/gnark/std/hash/mimc"
 )
 
@@ -50,22 +51,19 @@ func ReadPKVK() (groth16.ProvingKey, groth16.VerifyingKey) {
 
 func main() {
 	var myCircuit Circuit
-	r1cs, _ := frontend.Compile(ecc.BN254, r1cs.NewBuilder, &myCircuit)
+	r1cs, _ := frontend.Compile(bn254.ID.ScalarField(), r1cs.NewBuilder, &myCircuit)
 
-	/* --------- Run this once then use the output file with gnark-setup -------- */
-	var q qap.QAP
-	q.New(r1cs)
-	q.Save("qap")
-	/* -------------------------------------------------------------------------- */
+	// var qap *QAP = &QAP{}
+	// qap.New(r1cs)
+	// qap.Save("qap")
 
-	/* ------- Copy pk and vk from gnark-setup then use the following code ------ */
+	//pk, vk, _ :=groth16.Setup(r1cs)
 	pk, vk := ReadPKVK()
-
 	assignment := &Circuit{
 		PreImage: "16130099170765464552823636852555369511329944820189892919423002775646948828469",
-		Hash:     "8674594860895598770446879254410848023850744751986836044725552747672873438975",
+		Hash:     "12886436712380113721405259596386800092738845035233065858332878701083870690753",
 	}
-	witness, _ := frontend.NewWitness(assignment, ecc.BN254)
+	witness, _ := frontend.NewWitness(assignment, bn254.ID.ScalarField())
 	prf, err := groth16.Prove(r1cs, pk, witness)
 	if err != nil {
 		panic(err)
